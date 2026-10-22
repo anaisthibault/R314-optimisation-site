@@ -3,7 +3,7 @@
 :root{--bg:#0f1226;--fg:#E8ECF1;--muted:#93A1B1;--primary:#7C5CFF;--accent:#06D6A0;--card:#15193A;--shadow:rgba(0,0,0,0.45)}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif}
-.container{width:min(1200px,92%);margin:0 auto}
+.container{max-width:100%;height:auto;margin:0 auto}
 a{color:var(--fg);text-decoration:none;opacity:.9}a:hover{opacity:1}
 .topbar{position:sticky;top:0;backdrop-filter:blur(6px);background:linear-gradient(180deg,rgba(13,16,35,.8),rgba(13,16,35,.2));z-index:10;box-shadow:0 10px 30px var(--shadow)}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
@@ -18,7 +18,7 @@ a{color:var(--fg);text-decoration:none;opacity:.9}a:hover{opacity:1}
 .section{padding:60px 0}.section h2{margin:0 0 20px}
 .gallery .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .card{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px var(--shadow)}
-.card img{display:block;width:100%;height:auto;opacity:0;transition:opacity .6s ease}
+.card img{display:block;max-width:100%;height:auto;opacity:0;transition:opacity .6s ease}
 .card img.loaded{opacity:1}
 .features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 .feature{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 14px 40px var(--shadow)}
@@ -1231,7 +1231,7 @@ a{color:var(--fg);text-decoration:none;opacity:.9}a:hover{opacity:1}
 .gallery-filter{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:26px}
 .gallery-filter label{color:var(--muted);font-size:14px}
 .gallery-filter input{background:var(--card);color:var(--fg);border:1px solid rgba(255,255,255,.14);
-  border-radius:10px;padding:9px 12px;min-width:min(320px,100%);font:inherit;font-size:14px}
+  border-radius:10px;padding:9px 12px;max-width:100%;height:auto;font:inherit;font-size:14px}
 .gallery-filter input:focus{outline:2px solid var(--primary);outline-offset:1px}
 .filter-info{margin:0;color:var(--muted);font-size:13px}
 .card{transform:translateY(24px);transition:transform .35s ease}
