@@ -1,23 +1,23 @@
 @font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://gstatic.com) format('woff2');
-}
-@font-face {
-  font-family: 'Poppins';
+  font-family: 'Montserrat';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://gstatic.com) format('woff2');
+  src: url('../fonts/Montserrat-Regular.ttf') format('truetype');
 }
 @font-face {
-  font-family: 'Poppins';
+  font-family: 'Montserrat';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url(https://gstatic.com) format('woff2');
+  src: url('../fonts/Montserrat-SemiBold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/Montserrat-Bold.ttf') format('truetype');
 }
 
 :root {
@@ -43,7 +43,8 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: 'Poppins', system-ui, Segoe UI, Roboto, Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
 }
 
 .container { max-width: 100%; height: auto; margin: 0 auto; }
