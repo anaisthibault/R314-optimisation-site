@@ -1,17 +1,99 @@
 /* ============================================================
-   app.js — interactions de la galerie SlowSite (Avec Calendrier)
-   Indépendant — Aucune dépendance externe (UIKit supprimé)
+   app.js — interactions de la galerie SlowSite
+   Révélation des vignettes au scroll + nuage de mots-clés.
+   Dépend de js/vendor/ui-kit.min.js (UIKit).
+   ============================================================ */
+/* ============================================================
+   app.js — interactions de la galerie SlowSite (100% Autonome)
+   Révélation des vignettes au scroll + nuage de mots-clés.
+   Indépendant — Aucune dépendance externe (UIKit supprimé).
    ============================================================ */
 (function () {
   'use strict';
 
-  /* Construit le calendrier d'activité : 53 semaines de 7 jours, la teinte de chaque case reflétant le nombre de prises de vue archivées ce jour-là. */
+  /* Vocabulaire d'indexation de la photothèque. */
+  var TAGS = [
+    'portrait', 'paysage', 'nature morte', 'macro', 'architecture', 'photo de rue',
+    'reportage', 'documentaire', 'animalier', 'sport', 'mode', 'culinaire', 'spectacle',
+    'concert', 'mariage', 'corporate', 'packshot', 'astrophotographie', 'sous-marine',
+    'aérienne', 'urbex', 'industrielle', 'scolaire', 'studio', 'autoportrait', 'street art',
+    'botanique', 'ornithologie', 'minéralogie', 'scène de genre', 'pose longue', 'filé',
+    'bokeh', 'contre-jour', 'panoramique', 'focus stacking', 'light painting',
+    'surimpression', 'sténopé', 'lomographie', 'time-lapse', 'hyperlapse', 'photogramme',
+    'solarisation', 'bracketing', 'rafale', 'mise au point manuelle', 'hyperfocale',
+    'profondeur de champ', 'flou de bougé', 'zoom burst', 'réflexion', 'silhouette',
+    'ombre portée', 'symétrie miroir', 'levée de voile', 'prise de vue au flash',
+    'seconde synchro', 'multi-exposition', 'vue éclatée', 'heure dorée', 'heure bleue',
+    'lumière rasante', 'lumière diffuse', 'clair-obscur', 'éclairage Rembrandt',
+    'éclairage papillon', 'lumière naturelle', 'flash déporté', 'boîte à lumière',
+    'réflecteur', 'nid d\'abeille', 'gélatine colorée', 'stroboscope', 'low key',
+    'high key', 'halo', 'contre-jour partiel', 'lumière d\'appoint', 'fond lumineux',
+    'ombre douce', 'ombre dure', 'lumière zénithale', 'lumière latérale',
+    'lumière frontale', 'pénombre', 'rétroéclairage', 'faisceau', 'diffuseur', 'snoot',
+    'grand angle', 'téléobjectif', 'focale fixe', 'zoom transstandard', 'fisheye',
+    'tilt-shift', 'trépied', 'monopode', 'rotule ball', 'filtre polarisant', 'filtre ND',
+    'filtre dégradé', 'pare-soleil', 'télémètre', 'reflex', 'hybride', 'moyen format',
+    'grand format', 'chambre photographique', 'flash cobra', 'bague allonge', 'soufflet',
+    'doubleur de focale', 'déclencheur souple', 'viseur optique', 'viseur électronique',
+    'carte mémoire', 'batterie de secours', 'sac photo', 'courroie', 'pellicule',
+    'format 35 mm', 'format 120', 'négatif', 'diapositive', 'tirage argentique',
+    'laboratoire', 'révélateur', 'fixateur', 'agrandisseur', 'planche contact',
+    'papier baryté', 'papier RC', 'virage sépia', 'cyanotype', 'platinotypie',
+    'gomme bichromatée', 'collodion humide', 'daguerréotype', 'sels d\'argent',
+    'grain argentique', 'poussée de développement', 'bain d\'arrêt', 'séchage', 'spire',
+    'cuve de développement', 'chambre noire', 'inactinique', 'chimie', 'archivage',
+    'monochrome', 'sépia', 'désaturé', 'couleurs saturées', 'teintes froides',
+    'teintes chaudes', 'balance des blancs', 'colorimétrie', 'étalonnage', 'courbe tonale',
+    'niveaux', 'dominante bleue', 'dominante verte', 'duotone', 'trichromie', 'pastel',
+    'contraste élevé', 'contraste doux', 'noir profond', 'blanc pur', 'gris neutre',
+    'palette restreinte', 'complémentaires', 'camaïeu', 'teinte unique', 'virage croisé',
+    'rendu cinéma', 'rendu neutre', 'rendu chaud', 'aplat', 'règle des tiers',
+    'nombre d\'or', 'lignes de fuite', 'symétrie', 'cadre dans le cadre', 'point de fuite',
+    'diagonale dominante', 'premier plan', 'arrière-plan', 'perspective forcée',
+    'contre-plongée', 'plongée', 'hauteur d\'homme', 'cadrage serré', 'plan large',
+    'plan d\'ensemble', 'gros plan', 'plan américain', 'format carré', 'format panoramique',
+    'orientation portrait', 'orientation paysage', 'espace négatif', 'répétition',
+    'rythme visuel', 'point focal', 'ligne d\'horizon', 'décentrage',
+    'remplissage du cadre', 'hors-champ', 'montagne', 'littoral', 'forêt', 'désert',
+    'ville', 'village', 'ruelle', 'marché', 'port', 'gare', 'friche', 'chantier', 'champ',
+    'vignoble', 'rivière', 'cascade', 'lac', 'falaise', 'dune', 'marais', 'sentier', 'pont',
+    'phare', 'moulin', 'ruines', 'cloître', 'verrière', 'escalier', 'façade', 'toiture',
+    'aube', 'crépuscule', 'nuit étoilée', 'brume', 'brouillard', 'pluie', 'orage', 'neige',
+    'givre', 'vent', 'ciel dégagé', 'arc-en-ciel', 'nuages bas', 'cumulus', 'éclaircie',
+    'averse', 'gel matinal', 'canicule', 'embruns', 'rosée', 'halo lunaire', 'voie lactée',
+    'aurore', 'éclipse', 'mirage', 'poussière', 'sable soulevé', 'reflet mouillé', 'flaque',
+    'vapeur', 'recadrage', 'retouche', 'densité', 'masque de fusion', 'calque de réglage',
+    'accentuation', 'réduction de bruit', 'correction optique', 'redressement', 'détourage',
+    'tampon', 'correcteur localisé', 'dématriçage', 'fichier brut', 'export web',
+    'profil colorimétrique', 'netteté de sortie', 'vignetage', 'aberration chromatique',
+    'distorsion', 'moiré', 'clarté', 'texture', 'suppression de poussières', 'fusion HDR',
+    'assemblage panoramique', 'upscaling', 'compression', 'métadonnées', 'mots-clés',
+    'tirage d\'exposition', 'accrochage', 'encadrement', 'passe-partout', 'portfolio',
+    'série', 'diptyque', 'triptyque', 'édition limitée', 'numérotation', 'vernissage',
+    'résidence', 'commande', 'cession de droits', 'droit à l\'image', 'légende',
+    'fonds photographique', 'inventaire', 'numérisation', 'conservation'
+  ];
+
+  /* Alimente les suggestions du champ de filtrage avec le vocabulaire
+     d'indexation de la photothèque. */
+  function buildKeywordIndex() {
+    var list = document.querySelector('#motscles');
+    if (!list) return;
+
+    list.innerHTML = '';
+    for (var i = 0; i < TAGS.length; i++) {
+      list.innerHTML += '<option value="' + TAGS[i] + '"></option>';
+    }
+  }
+
+  /* Construit le calendrier d'activité : 53 semaines de 7 jours, la teinte de
+     chaque case reflétant le nombre de prises de vue archivées ce jour-là. */
   function buildActivityCalendar() {
     var host = document.querySelector('#calendrier');
     if (!host) return;
 
-    var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-    // On s'ancre sur l'année actuelle 2026
+    var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
+                'août', 'septembre', 'octobre', 'novembre', 'décembre'];
     var fin = new Date(Date.UTC(2026, 8, 30));
     var frag = document.createDocumentFragment();
 
@@ -21,21 +103,25 @@
       var cell = document.createElement('div');
       cell.className = 'cal-day';
       cell.setAttribute('data-n', String(n));
-      cell.title = n === 0 ? 'Aucune prise de vue le ' + jour.getUTCDate() + ' ' + MOIS[jour.getUTCMonth()] : n + ' prise' + (n > 1 ? 's' : '') + ' de vue le ' + jour.getUTCDate() + ' ' + MOIS[jour.getUTCMonth()];
+      cell.title = n === 0
+        ? 'Aucune prise de vue le ' + jour.getUTCDate() + ' ' + MOIS[jour.getUTCMonth()]
+        : n + ' prise' + (n > 1 ? 's' : '') + ' de vue le ' + jour.getUTCDate() +
+          ' ' + MOIS[jour.getUTCMonth()];
       frag.appendChild(cell);
     }
     host.innerHTML = ''; // Nettoie le conteneur avant injection
     host.appendChild(frag);
   }
 
-  /* Niveau d'activité d'une journée, de 0 à 4. Les sorties sont plus nombreuses le week-end et à la belle saison. */
+  /* Niveau d'activité d'une journée, de 0 à 4. Les sorties sont plus
+     nombreuses le week-end et à la belle saison. */
   function activite(jour) {
     var j = jour.getUTCDay();
     var mois = jour.getUTCMonth();
     var graine = (jour.getUTCFullYear() * 372 + mois * 31 + jour.getUTCDate()) * 2654435761;
     var bruit = ((graine >>> 13) % 100) / 100;
-    var poids = (j === 0 || j === 6 ? 0.45 : 0.12) + (mois >= 4 && mois <= 8 ? 0.28 : 0.05) + bruit * 0.45;
-    
+    var poids = (j === 0 || j === 6 ? 0.45 : 0.12) +
+                (mois >= 4 && mois <= 8 ? 0.28 : 0.05) + bruit * 0.45;
     if (poids < 0.35) return 0;
     if (poids < 0.6) return 1;
     if (poids < 0.8) return 2;
@@ -66,38 +152,38 @@
       } else if (!visibles) {
         info.textContent = 'Aucun visuel de la sélection pour « ' + champ.value.trim() + ' »';
       } else {
-        info.textContent = visibles + ' visuel' + (visibles > 1 ? 's' : '') + ' sur ' + cards.length;
+        info.textContent = visibles + ' visuel' + (visibles > 1 ? 's' : '') +
+                           ' sur ' + cards.length;
       }
     }
   }
 
-  /* Anime l'arrivée des cartes dans le viewport, ajuste leur hauteur et gère l'opacité du calendrier au scroll. */
+  /* Aligne la hauteur des cartes et anime leur arrivée dans le viewport. */
   function revealCards() {
     var cards = document.querySelectorAll('.card');
-    
-    if (cards.length > 0) {
-      // Optimisation de la hauteur des cartes
+
+    for (var i = 0; i < cards.length; i++) {
+      var rect = cards[i].getBoundingClientRect();
+
+      // Hauteur de la plus grande carte, pour garder une grille régulière.
       var tallest = 0;
-      for (var j = 0; j < cards.length; j++) {
-        if (cards[j].offsetHeight > tallest) {
-          tallest = cards[j].offsetHeight;
+      var all = document.querySelectorAll('.card');
+      for (var j = 0; j < all.length; j++) {
+        if (all[j].offsetHeight > tallest) {
+          tallest = all[j].offsetHeight;
         }
       }
+      cards[i].style.minHeight = tallest + 'px';
 
-      for (var i = 0; i < cards.length; i++) {
-        cards[i].style.minHeight = tallest + 'px';
-        var rect = cards[i].getBoundingClientRect();
-
-        if (rect.top < window.innerHeight - 40) {
-          cards[i].classList.add('visible');
-          cards[i].style.transform = 'translateY(0px)';
-        } else {
-          cards[i].style.transform = 'translateY(24px)';
-        }
+      if (rect.top < window.innerHeight - 40) {
+        cards[i].classList.add('visible');
+        cards[i].style.transform = 'translateY(0px)';
+      } else {
+        cards[i].style.transform = 'translateY(24px)';
       }
     }
 
-    // Effet d'apparition progressive sur les cases du calendrier à l'approche
+    // Les cases du calendrier apparaissent progressivement à l'approche.
     var jours = document.querySelectorAll('.cal-day');
     for (var k = 0; k < jours.length; k++) {
       var box = jours[k].getBoundingClientRect();
@@ -118,25 +204,21 @@
       }
     });
   }
-
-  // Initialisation au chargement du DOM
+  // Initialisation native (Remplace UIKit.ready)
   function init() {
+    buildKeywordIndex();
     buildActivityCalendar();
     watchImages();
     revealCards();
-    
     var champ = document.querySelector('#q');
     if (champ) champ.addEventListener('input', filterGallery);
   }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
-
-  // Événements globaux
   window.addEventListener('scroll', revealCards);
   window.addEventListener('resize', revealCards);
   window.addEventListener('load', revealCards);
-})();
+})()
