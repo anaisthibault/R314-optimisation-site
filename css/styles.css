@@ -60,14 +60,7 @@ a:hover { opacity: 1; }
   background: radial-gradient(1200px 600px at 20% -10%, rgba(124,92,255,.35), transparent 60%),
               radial-gradient(900px 600px at 100% 0%, rgba(6,214,160,.25), transparent 60%);
 }
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url('../img/img6.webp') center / cover no-repeat;
-  opacity: .04;
-  pointer-events: none;
-}
+
 .hero-inner {
   position: relative;
   z-index: 1;
@@ -102,8 +95,10 @@ a:hover { opacity: 1; }
   transition: transform .35s ease;
 }
 .card.visible { transform: translateY(0); }
-.card img { display: block; max-width: 100%; height: auto; opacity: 0; transition: opacity .6s ease; }
-.card img.loaded { opacity: 1; }
+.card img { display: block; max-width: 100%; height: auto; }
+
+
+
 
 .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .feature { background: var(--card); padding: 18px; border-radius: 14px; box-shadow: 0 14px 40px var(--shadow); }
