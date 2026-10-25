@@ -104,6 +104,7 @@ a:hover { opacity: 1; }
 .feature { background: var(--card); padding: 18px; border-radius: 14px; box-shadow: 0 14px 40px var(--shadow); }
 .feature .icon { font-size: 28px; }
 
+.features, .challenges, .footer { content-visibility: auto; contain-intrinsic-size: auto 420px; }
 .challenges ol { line-height: 1.7; }
 .footer { padding: 30px 0; border-top: 1px solid rgba(255,255,255,.08); color: #c9d1d9; }
 

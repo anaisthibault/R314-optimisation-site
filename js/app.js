@@ -3,11 +3,6 @@
    Révélation des vignettes au scroll + nuage de mots-clés.
    Dépend de js/vendor/ui-kit.min.js (UIKit).
    ============================================================ */
-/* ============================================================
-   app.js — interactions de la galerie SlowSite (100% Autonome)
-   Révélation des vignettes au scroll + nuage de mots-clés.
-   Indépendant — Aucune dépendance externe (UIKit supprimé).
-   ============================================================ */
 (function () {
   'use strict';
 
@@ -77,20 +72,18 @@
   /* Alimente les suggestions du champ de filtrage avec le vocabulaire
      d'indexation de la photothèque. */
   function buildKeywordIndex() {
-    var list = document.querySelector('#motscles');
-    if (!list) return;
-
-    list.innerHTML = '';
-    for (var i = 0; i < TAGS.length; i++) {
-      list.innerHTML += '<option value="' + TAGS[i] + '"></option>';
-    }
+    var list = document.getElementById('motscles');
+    if (!list || list.childElementCount) return;
+    list.innerHTML = TAGS.map(function (t) {
+      return '<option value="' + t + '"></option>';
+    }).join('');
   }
 
   /* Construit le calendrier d'activité : 53 semaines de 7 jours, la teinte de
      chaque case reflétant le nombre de prises de vue archivées ce jour-là. */
   function buildActivityCalendar() {
-    var host = document.querySelector('#calendrier');
-    if (!host) return;
+    var host = document.getElementById('calendrier');
+    if (!host || host.childElementCount) return;
 
     var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
                 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
@@ -109,7 +102,6 @@
           ' ' + MOIS[jour.getUTCMonth()];
       frag.appendChild(cell);
     }
-    host.innerHTML = ''; // Nettoie le conteneur avant injection
     host.appendChild(frag);
   }
 
@@ -131,8 +123,8 @@
 
   /* Filtre la galerie sur les mots-clés associés à chaque visuel. */
   function filterGallery() {
-    var champ = document.querySelector('#q');
-    var info = document.querySelector('#filter-info');
+    var champ = document.querySelector('q');
+    var info = document.querySelector('filter-info');
     if (!champ) return;
 
     var q = champ.value.trim().toLowerCase();
@@ -153,7 +145,7 @@
         info.textContent = 'Aucun visuel de la sélection pour « ' + champ.value.trim() + ' »';
       } else {
         info.textContent = visibles + ' visuel' + (visibles > 1 ? 's' : '') +
-                           ' sur ' + cards.length;
+          ' sur ' + cards.length;
       }
     }
   }
@@ -161,64 +153,67 @@
   /* Aligne la hauteur des cartes et anime leur arrivée dans le viewport. */
   function revealCards() {
     var cards = document.querySelectorAll('.card');
-
-    for (var i = 0; i < cards.length; i++) {
-      var rect = cards[i].getBoundingClientRect();
-
-      // Hauteur de la plus grande carte, pour garder une grille régulière.
-      var tallest = 0;
-      var all = document.querySelectorAll('.card');
-      for (var j = 0; j < all.length; j++) {
-        if (all[j].offsetHeight > tallest) {
-          tallest = all[j].offsetHeight;
+    if (!('IntersectionObserver' in window)) {
+      for (var i = 0; i < cards.length; i++) cards[i].classList.add('visible');
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        // visible dans l'écran, ou déjà dépassée (au-dessus du viewport)
+        if (e.isIntersecting || e.boundingClientRect.top < 0) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
         }
-      }
-      cards[i].style.minHeight = tallest + 'px';
-
-      if (rect.top < window.innerHeight - 40) {
-        cards[i].classList.add('visible');
-        cards[i].style.transform = 'translateY(0px)';
-      } else {
-        cards[i].style.transform = 'translateY(24px)';
-      }
-    }
-
-    // Les cases du calendrier apparaissent progressivement à l'approche.
-    var jours = document.querySelectorAll('.cal-day');
-    for (var k = 0; k < jours.length; k++) {
-      var box = jours[k].getBoundingClientRect();
-      var d = Math.abs(box.top - window.innerHeight / 2);
-      jours[k].style.opacity = Math.max(0.15, 1 - d / window.innerHeight);
-    }
+      });
+    }, { rootMargin: '0px 0px -40px 0px' });
+    cards.forEach(function (c) { io.observe(c); });
   }
 
-  /* Affiche les images une fois chargées. */
-  function watchImages() {
-    document.querySelectorAll('.card img').forEach(function (img) {
-      if (img.complete) {
-        img.classList.add('loaded');
-      } else {
-        img.addEventListener('load', function () {
-          img.classList.add('loaded');
-        });
-      }
-    });
+  function setupCalendar() {
+    var host = document.getElementById('calendrier');
+    if (!host) return;
+    var ticking = false;
+
+    function fade() {
+      ticking = false;
+      var box = host.getBoundingClientRect();
+      var centre = box.top + box.height / 2;
+      var d = Math.abs(centre - window.innerHeight / 2);
+      host.style.opacity = Math.max(0.15, 1 - d / window.innerHeight);
+    }
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(fade);
+    }
+    function start() {
+      buildActivityCalendar();
+      fade();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+    }
+
+    if (!('IntersectionObserver' in window)) { start(); return; }
+    var io = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) { io.disconnect(); start(); }
+    }, { rootMargin: '300px 0px' });
+    io.observe(host.parentNode);
   }
+  
   // Initialisation native (Remplace UIKit.ready)
   function init() {
-    buildKeywordIndex();
-    buildActivityCalendar();
-    watchImages();
     revealCards();
-    var champ = document.querySelector('#q');
-    if (champ) champ.addEventListener('input', filterGallery);
+    setupCalendar();
+    var champ = document.getElementById('q');
+    if (champ) {
+      champ.addEventListener('input', filterGallery);
+      champ.addEventListener('focus', buildKeywordIndex, { once: true });
+      champ.addEventListener('pointerdown', buildKeywordIndex, { once: true });
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
-  window.addEventListener('scroll', revealCards);
-  window.addEventListener('resize', revealCards);
-  window.addEventListener('load', revealCards);
-})()
+})();
