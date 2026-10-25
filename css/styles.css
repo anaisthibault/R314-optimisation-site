@@ -52,6 +52,8 @@ a:hover { opacity: 1; }
 .logo span { color: var(--accent); }
 .menu { display: flex; gap: 22px; }
 
+.image-wrapper img { display: block; max-width: 100%; height: auto; }
+
 /*Balise hero mixée avec le style de theme-legacy.css*/
 .hero {
   position: relative;
